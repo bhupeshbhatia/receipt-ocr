@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <input type="file" name="fileupload" value="fileupload" id="fileupload">
+    <label for="fileupload"> Select an image to upload</label>
+    <br>
+    <input type="button" value="Read Receipt" onclick="getUrl()">
+    <br>
+    <img id="imageReceipt" src="#" width="200" height="200">
+    <div id="ocr_results"> </div>
+    <div id="ocr_status"> </div>
+
+    <br>
+    <p id="receiptReading"></p>
+
+    <script>
+        /*
+        In order to start OCR - url of the image is needed. According to Tesseract API - there is a recognize method that requires URL.
+        OCR runs asynchronously and returns TesseractJob object. So the contents of the div have to be updated inside the callback function,
+        which can be added using then() method. Progress() method can be used to monitor the progress of the OCR operation.
+        */
+        function runOcr(url) {
+            Tesseract.recognize(url)
+                .then((result) => {
+                    document.getElementById("ocr_results").innerText = result.text;
+                })
+                .progress((result) => {
+                    document.getElementById("ocr_status").innerText = result["status"] + " (" +
+                    (result["progress"] * 100) + "%)";
+                    console.log("progress", result);
+                });
+        }
+
+        function getUrl() {
+            let fileUrl = document.getElementById("fileupload").files[0];
+            showImage(fileUrl);
+            runOcr(fileUrl);
+        }
+
+        function showImage(fileUrl) {
+            let reader = new FileReader();
+            reader.onload = (event) => {
+                document.getElementById("imageReceipt").src = event.target.result;
+            }
+            reader.readAsDataURL(fileUrl);
+
+        }
+    </script>
+</body>
+</html>
